@@ -416,7 +416,7 @@ function updateOverview(algo) {
     stepsList.appendChild(li);
   });
 
-  visualizer.load(algo.steps);
+  visualizer.load(algo.id, algo.steps);
 }
 
 function updateTrilemma(algo) {
@@ -427,7 +427,7 @@ function updateTrilemma(algo) {
   const ctx = document.getElementById('trilemmaChart').getContext('2d');
   if (trilemmaChart) trilemmaChart.destroy();
 
-  Chart.defaults.color = '#a0a0b0';
+  Chart.defaults.color = '#9499a6';
   Chart.defaults.font.family = "'Outfit', sans-serif";
 
   trilemmaChart = new Chart(ctx, {
@@ -437,41 +437,41 @@ function updateTrilemma(algo) {
       datasets: [{
         label: algo.name,
         data: algo.trilemma.scores,
-        backgroundColor: 'rgba(0, 240, 255, 0.1)',
-        borderColor: '#00f0ff',
-        pointBackgroundColor: ['#ff5500', '#9d00ff', '#00f0ff'],
-        pointBorderColor: '#00f0ff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#00f0ff',
-        borderWidth: 2,
-        pointRadius: 6,
-        pointHoverRadius: 9
+        backgroundColor: 'rgba(47, 128, 237, 0.04)',
+        borderColor: 'rgba(47, 128, 237, 0.8)',
+        pointBackgroundColor: ['#eb5757', '#8e2de2', '#2f80ed'],
+        pointBorderColor: 'rgba(47, 128, 237, 0.8)',
+        pointHoverBackgroundColor: '#ffffff',
+        pointHoverBorderColor: '#2f80ed',
+        borderWidth: 1.5,
+        pointRadius: 5,
+        pointHoverRadius: 7
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: { duration: 1000, easing: 'easeOutQuart' },
+      animation: { duration: 800, easing: 'easeOutQuart' },
       scales: {
         r: {
-          angleLines: { color: 'rgba(255, 255, 255, 0.05)' },
-          grid: { color: 'rgba(255, 255, 255, 0.05)', circular: true },
-          pointLabels: { color: '#ffffff', font: { size: 14, weight: '600' } },
+          angleLines: { color: 'rgba(255, 255, 255, 0.02)' },
+          grid: { color: 'rgba(255, 255, 255, 0.03)', circular: true },
+          pointLabels: { color: '#f3f3f7', font: { size: 12, weight: '500' } },
           ticks: { display: false, min: 0, max: 10 }
         }
       },
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: 'rgba(15, 15, 20, 0.9)',
-          titleColor: '#00f0ff',
-          bodyColor: '#ffffff',
-          borderColor: 'rgba(255, 255, 255, 0.1)',
+          backgroundColor: 'rgba(8, 8, 12, 0.95)',
+          titleColor: '#00e5ff',
+          bodyColor: '#f3f3f7',
+          borderColor: 'rgba(255, 255, 255, 0.04)',
           borderWidth: 1,
-          padding: 12,
-          cornerRadius: 8,
-          titleFont: { size: 16, family: 'Space Grotesk' },
-          bodyFont: { size: 14, family: 'Outfit' }
+          padding: 10,
+          cornerRadius: 6,
+          titleFont: { size: 14, family: 'Space Grotesk' },
+          bodyFont: { size: 12, family: 'Outfit' }
         }
       }
     }

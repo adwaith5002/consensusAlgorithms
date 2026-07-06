@@ -4,10 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Consensus Algorithms in Blockchain — A Comparative Explorer</title>
-    <!-- Google Fonts for modern typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   </head>
   <body>
     <!-- Abstract Animated Background -->
@@ -20,9 +17,11 @@
 
     <div id="app-container">
       <header class="hero slide-down">
-        <div class="badge">Educational Explorer</div>
-        <h1>Consensus Algorithms<br/><span class="text-gradient">in Blockchain</span></h1>
-        <p class="subtitle">A visual deep dive into how distributed networks achieve truth.</p>
+        <div>
+          <div class="badge">Consensus Lab</div>
+          <h1>Consensus Algorithms <span class="text-gradient">in Blockchain</span></h1>
+          <p class="subtitle">An interactive simulation suite exploring distributed state agreement protocols.</p>
+        </div>
       </header>
       
       <main>
@@ -71,6 +70,7 @@
                 <div class="animation-stage" id="animation-stage">
                   <div id="vis-network" class="vis-network"></div>
                 </div>
+                <div id="vis-legend" class="legend-container"></div>
               </div>
             </div>
           </section>
@@ -153,7 +153,7 @@
       <footer>
         <div class="footer-content">
           <p>Designed for educational exploration.</p>
-          <div class="tech-stack">Built with Vanilla JS, Chart.js & Vis-Network</div>
+          <div class="tech-stack">Built with HTML5 Canvas, Vanilla JS & Chart.js</div>
         </div>
       </footer>
     </div>
