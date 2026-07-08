@@ -6,11 +6,11 @@ import { ConsensusVisualizer } from './visualizer.js';
 const createNodes = (arr) => arr.map(n => ({ id: n[0], label: n[1], color: n[2], shape: n[3] || 'dot', size: n[4] || 20 }));
 const createEdges = (arr) => arr.map(e => ({ from: e[0], to: e[1], arrows: e[2] || 'to' }));
 
-const C_CYAN = { border: '#00f0ff', background: 'rgba(0, 240, 255, 0.15)' };
-const C_PURP = { border: '#9d00ff', background: 'rgba(157, 0, 255, 0.15)' };
-const C_ORANGE = { border: '#ff5500', background: 'rgba(255, 85, 0, 0.15)' };
-const C_GREEN = { border: '#00ff88', background: 'rgba(0, 255, 136, 0.15)' };
-const C_WHITE = { border: '#ffffff', background: 'rgba(255, 255, 255, 0.1)' };
+const C_CYAN = { border: '#d97706', background: 'rgba(217, 119, 6, 0.12)' };
+const C_PURP = { border: '#8b5cf6', background: 'rgba(139, 92, 246, 0.12)' };
+const C_ORANGE = { border: '#ef4444', background: 'rgba(239, 68, 68, 0.12)' };
+const C_GREEN = { border: '#10b981', background: 'rgba(16, 185, 129, 0.12)' };
+const C_WHITE = { border: '#a19e95', background: 'rgba(161, 158, 149, 0.08)' };
 
 const consensusData = [
   {
@@ -359,14 +359,107 @@ const consensusData = [
   }
 ];
 
+// Dynamic injection of academic references to keep raw data clean
+const referencesMapping = {
+  pow: [
+    { name: 'Wikipedia: Proof of Work', url: 'https://en.wikipedia.org/wiki/Proof_of_work' },
+    { name: 'Bitcoin Whitepaper (Satoshi Nakamoto)', url: 'https://bitcoin.org/bitcoin.pdf' }
+  ],
+  pos: [
+    { name: 'Wikipedia: Proof of Stake', url: 'https://en.wikipedia.org/wiki/Proof_of_stake' },
+    { name: 'Ethereum Proof of Stake (ETH Docs)', url: 'https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/' }
+  ],
+  dpos: [
+    { name: 'Wikipedia: Delegated Proof of Stake', url: 'https://en.wikipedia.org/wiki/Proof_of_stake#Delegated_proof_of_stake' },
+    { name: 'Delegated Proof of Stake Consensus (BitShares)', url: 'https://bitshares.org/technology/delegated-proof-of-stake-consensus/' }
+  ],
+  poh: [
+    { name: 'Solana Whitepaper (Anatoly Yakovenko)', url: 'https://solana.com/solana-whitepaper.pdf' },
+    { name: 'Solana Proof of History Guide', url: 'https://docs.solana.com/developing/programming-model/transactions#proof-of-history' }
+  ],
+  dag: [
+    { name: 'Wikipedia: Directed Acyclic Graph', url: 'https://en.wikipedia.org/wiki/Directed_acyclic_graph' },
+    { name: 'The Tangle Whitepaper (IOTA Foundation)', url: 'https://www.iota.org/foundation/research-papers' }
+  ],
+  avalanche: [
+    { name: 'Avalanche Consensus Whitepaper (Team Rocket)', url: 'https://www.avalabs.org/whitepapers' },
+    { name: 'Avalanche Consensus Protocol Overview', url: 'https://docs.avax.network/overview/getting-started/avalanche-consensus' }
+  ],
+  pbft: [
+    { name: 'Wikipedia: Byzantine Fault Tolerance', url: 'https://en.wikipedia.org/wiki/Byzantine_fault_tolerance#Practical_Byzantine_fault_tolerance' },
+    { name: 'Practical Byzantine Fault Tolerance (Castro & Liskov)', url: 'https://pmg.csail.mit.edu/papers/osdi99.pdf' }
+  ],
+  rollups: [
+    { name: 'Ethereum Scaling Rollups guide', url: 'https://ethereum.org/en/developers/docs/scaling/rollups/' },
+    { name: 'Arbitrum Rollup Technology Overview', url: 'https://developer.arbitrum.io/intro/' }
+  ],
+  poa: [
+    { name: 'Wikipedia: Proof of Authority', url: 'https://en.wikipedia.org/wiki/Proof_of_authority' },
+    { name: 'BNB Chain Consensus Mechanisms', url: 'https://docs.bnbchain.org/docs/learn/consensus' }
+  ],
+  poc: [
+    { name: 'Wikipedia: Proof of Space', url: 'https://en.wikipedia.org/wiki/Proof_of_space' },
+    { name: 'Chia Network Greenpaper (Bram Cohen)', url: 'https://www.chia.net/greenpaper/' }
+  ]
+};
+
+consensusData.forEach(algo => {
+  algo.references = referencesMapping[algo.id] || [];
+});
+
 let trilemmaChart = null;
 let visualizer = null;
+let currentAlgoId = 'pow';
 
 function init() {
   visualizer = new ConsensusVisualizer('vis-network');
   renderFilters();
   renderMatrix();
+  setupHUDControls();
+  setupMatrixInteractivity();
+  setupProtocolSimulator();
   selectAlgorithm(consensusData[0].id);
+}
+
+function setupHUDControls() {
+  document.getElementById('btn-prev').addEventListener('click', () => visualizer.prevStep());
+  document.getElementById('btn-next').addEventListener('click', () => visualizer.nextStep());
+  document.getElementById('btn-play-pause').addEventListener('click', () => visualizer.togglePlay());
+  
+  document.getElementById('btn-speed-half').addEventListener('click', () => visualizer.setSpeed(0.5));
+  document.getElementById('btn-speed-1').addEventListener('click', () => visualizer.setSpeed(1));
+  document.getElementById('btn-speed-2').addEventListener('click', () => visualizer.setSpeed(2));
+  
+  document.getElementById('btn-zoom-in').addEventListener('click', () => visualizer.zoomIn());
+  document.getElementById('btn-zoom-out').addEventListener('click', () => visualizer.zoomOut());
+  document.getElementById('btn-zoom-fit').addEventListener('click', () => visualizer.zoomFit());
+}
+
+function setupMatrixInteractivity() {
+  const table = document.getElementById('compatibility-matrix');
+  if (!table) return;
+
+  table.addEventListener('mouseover', (e) => {
+    const cell = e.target.closest('td, th');
+    if (!cell) return;
+    
+    const colIndex = cell.cellIndex;
+    if (colIndex === undefined || colIndex === 0) return; // skip row header or empty index
+    
+    // Highlight all cells in the column
+    table.querySelectorAll('tr').forEach(row => {
+      const targetCell = row.cells[colIndex];
+      if (targetCell) {
+        targetCell.classList.add('active-col');
+      }
+    });
+  });
+
+  table.addEventListener('mouseout', (e) => {
+    table.querySelectorAll('.active-col').forEach(cell => {
+      cell.classList.remove('active-col');
+    });
+  });
 }
 
 function renderFilters() {
@@ -382,6 +475,7 @@ function renderFilters() {
 }
 
 function selectAlgorithm(id) {
+  currentAlgoId = id;
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.id === id);
   });
@@ -398,6 +492,7 @@ function selectAlgorithm(id) {
   updateOverview(algo);
   updateTrilemma(algo);
   updateEcosystem(algo);
+  recalculateSimulationMetrics();
 }
 
 function updateOverview(algo) {
@@ -497,6 +592,15 @@ function updateEcosystem(algo) {
     contractsList.appendChild(li);
   });
 
+  const referencesList = document.getElementById('algo-references');
+  referencesList.innerHTML = '';
+  (algo.references || []).forEach((ref) => {
+    const li = document.createElement('li');
+    li.className = 'info-card';
+    li.innerHTML = `<strong><a href="${ref.url}" target="_blank" rel="noopener noreferrer" class="ref-link">${ref.name} ↗</a></strong>`;
+    referencesList.appendChild(li);
+  });
+
   document.getElementById('layer-description').textContent = algo.layer.description;
 }
 
@@ -543,6 +647,99 @@ function renderMatrix() {
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);
+}
+
+function setupProtocolSimulator() {
+  const nodeSlider = document.getElementById('slider-nodes');
+  const latencySlider = document.getElementById('slider-latency');
+  
+  if (!nodeSlider || !latencySlider) return;
+
+  nodeSlider.addEventListener('input', (e) => {
+    document.getElementById('val-nodes').textContent = e.target.value;
+    recalculateSimulationMetrics();
+  });
+
+  latencySlider.addEventListener('input', (e) => {
+    document.getElementById('val-latency').textContent = `${e.target.value} ms`;
+    recalculateSimulationMetrics();
+  });
+}
+
+function recalculateSimulationMetrics() {
+  const N = parseInt(document.getElementById('slider-nodes').value);
+  const L = parseInt(document.getElementById('slider-latency').value);
+  
+  const tpsEl = document.getElementById('metric-tps');
+  const finalityEl = document.getElementById('metric-finality');
+  const powerEl = document.getElementById('metric-power');
+  
+  if (!tpsEl || !finalityEl || !powerEl) return;
+
+  let tps = 0;
+  let finality = '';
+  let power = '';
+
+  switch (currentAlgoId) {
+    case 'pow':
+      tps = 7;
+      finality = '60 mins (6 blocks)';
+      power = `${(N * 125).toFixed(0)} kW (High)`;
+      break;
+    case 'pos':
+      tps = Math.max(15, Math.round(1500 / (1 + (N * L / 8000))));
+      finality = `${((L * 4) / 1000 + 12).toFixed(1)} secs`;
+      power = `${(N * 0.05).toFixed(2)} kW (Very Low)`;
+      break;
+    case 'dpos':
+      tps = Math.round(3000 / (1 + L / 100));
+      finality = `${((L * 3) / 1000 + 2).toFixed(1)} secs`;
+      power = `0.85 kW (Low)`;
+      break;
+    case 'poh':
+      tps = Math.round(65000 / (1 + L / 50));
+      finality = `${Math.round(400 + L * 0.5)} ms`;
+      power = `2.1 kW (Low)`;
+      break;
+    case 'dag':
+      tps = Math.round((20 * N) / (1 + L / 100));
+      finality = `${(1.5 + (L * 8) / (N * 100)).toFixed(2)} secs`;
+      power = `0.05 kW (Negligible)`;
+      break;
+    case 'avalanche':
+      tps = Math.round(8000 / (1 + Math.log2(N) * L / 150));
+      finality = `${(0.8 + (Math.log2(N) * L) / 500).toFixed(2)} secs`;
+      power = `${(N * 0.08).toFixed(2)} kW (Very Low)`;
+      break;
+    case 'pbft':
+      tps = Math.max(1, Math.round(10000 / (N * N * (L / 100))));
+      finality = `${((L * N * 2) / 1000).toFixed(2)} secs`;
+      power = `0.25 kW (Low)`;
+      break;
+    case 'rollups':
+      tps = Math.round(5000 / (1 + L / 30));
+      finality = `~15 mins (L1 confirmation)`;
+      power = `0.15 kW (Very Low)`;
+      break;
+    case 'poa':
+      tps = Math.round(4000 / (1 + L / 60));
+      finality = `${((L * 2) / 1000 + 1).toFixed(1)} secs`;
+      power = `0.45 kW (Low)`;
+      break;
+    case 'poc':
+      tps = Math.round(25 / (1 + L / 120));
+      finality = `30 secs (Space Proof)`;
+      power = `${(N * 0.12).toFixed(1)} kW (Low)`;
+      break;
+    default:
+      tps = 'N/A';
+      finality = 'N/A';
+      power = 'N/A';
+  }
+
+  tpsEl.textContent = typeof tps === 'number' ? `${tps.toLocaleString()} Tx/sec` : tps;
+  finalityEl.textContent = finality;
+  powerEl.textContent = power;
 }
 
 document.addEventListener('DOMContentLoaded', init);
